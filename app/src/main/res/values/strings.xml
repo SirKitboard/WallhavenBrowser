@@ -1,6 +1,9 @@
 <resources>
-	<string name="app_name">Reddit Auto Wallpaper</string>
+	<string name="app_name">Wallhaven Browser</string>
+	<string name="action_settings">Settings</string>
+	<string name="title_activity_browser">Browser</string>
 
 	<string name="hello_world">Hello world!</string>
-	<string name="action_settings">Settings</string>
+	<string name="title_activity_wallpaper">WallpaperActivity</string>
+	<string name="title_activity_dispatch">DispatchActivity</string>
 </resources>

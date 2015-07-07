@@ -1,8 +1,11 @@
-package com.sirkitboard.redditautowallpaper;
+package com.sirkitboard.wallhavenbrowser.activities;
 
 import android.app.Activity;
 import android.app.WallpaperManager;
-import android.content.SharedPreferences;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -10,7 +13,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,25 +21,25 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.sirkitboard.wallhavenbrowser.R;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
 
 
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends Activity {
 
 	GetWallpaperAsyncTask gwat;
 //	SharedPreferences settings;
@@ -133,15 +135,36 @@ public class MainActivity extends ActionBarActivity{
 			fOut.flush();
 			fOut.close();
 			WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-			final String filePathThis = file.getAbsolutePath();
-
-			wallpaperManager.getCropAndSetWallpaperIntent(Uri.fromFile(file));
-
+			Uri uri = Uri.fromFile(file);
+			Intent intent = wallpaperManager.getCropAndSetWallpaperIntent(getImageContentUri(getApplicationContext(),file.getAbsolutePath()));
+			startActivity(intent);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	public static Uri getImageContentUri(Context context, String absPath) {
+		Log.v("com.sirkitboard.r", "getImageContentUri: " + absPath);
+
+		Cursor cursor = context.getContentResolver().query(
+				MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+				, new String[] { MediaStore.Images.Media._ID }
+				, MediaStore.Images.Media.DATA + "=? "
+				, new String[] { absPath }, null);
+
+		if (cursor != null && cursor.moveToFirst()) {
+			int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+			return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI , Integer.toString(id));
+
+		} else if (!absPath.isEmpty()) {
+			ContentValues values = new ContentValues();
+			values.put(MediaStore.Images.Media.DATA, absPath);
+			return context.getContentResolver().insert(
+					MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+		} else {
+			return null;
+		}
+	}
 	public void setImage() {
 		if(wallpaperCounter >= wallpaperID.size()){
 			pageNo++;

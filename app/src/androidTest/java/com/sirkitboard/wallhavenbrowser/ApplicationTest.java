@@ -1,4 +1,4 @@
-package com.sirkitboard.redditautowallpaper;
+package com.sirkitboard.wallhavenbrowser;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
