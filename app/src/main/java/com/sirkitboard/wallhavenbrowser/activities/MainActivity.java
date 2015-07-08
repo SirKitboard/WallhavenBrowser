@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -124,22 +125,32 @@ public class MainActivity extends Activity {
 	}
 
 	public void setWallpaper(View view) {
-		try {
-			String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Pictures/WHAW";
-			File dir = new File(file_path);
-			if(!dir.exists())
-				dir.mkdirs();
-			File file = new File (dir, "wallpaper.jpg");
-			FileOutputStream fOut = new FileOutputStream(file);
-			wallpaper.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
-			fOut.flush();
-			fOut.close();
-			WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-			Uri uri = Uri.fromFile(file);
-			Intent intent = wallpaperManager.getCropAndSetWallpaperIntent(getImageContentUri(getApplicationContext(),file.getAbsolutePath()));
-			startActivity(intent);
-		} catch (IOException e) {
-			e.printStackTrace();
+		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+		if(currentapiVersion > Build.VERSION_CODES.KITKAT) {
+			try {
+				String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Pictures/WHAW";
+				File dir = new File(file_path);
+				if (!dir.exists())
+					dir.mkdirs();
+				File file = new File(dir, "wallpaper.jpg");
+				FileOutputStream fOut = new FileOutputStream(file);
+				wallpaper.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+				fOut.flush();
+				fOut.close();
+				WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+				Uri uri = Uri.fromFile(file);
+				Intent intent = wallpaperManager.getCropAndSetWallpaperIntent(getImageContentUri(getApplicationContext(), file.getAbsolutePath()));
+				startActivity(intent);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+				wallpaperManager.setBitmap(wallpaper);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -232,6 +243,8 @@ public class MainActivity extends Activity {
 				Log.e("SetWallpaper", "Malformed URL");
 			} catch (IOException e) {
 				Log.e("SetWallpaper", "IO");
+			} catch (Exception e) {
+				Log.e("SetWallpaper", "Out of memory");
 			}
 			return "fail";
 		}

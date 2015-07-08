@@ -5,14 +5,23 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "com.sirkitboard.redditautowallpaper"
+        applicationId "com.sirkitboard.wallhavenbrowser"
         minSdkVersion 17
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }
+    signingConfigs {
+        release {
+            storeFile file("C:\\Users\\Aditya\\AndroidKeyStore\\AdiKey.jks")
+            storePassword "AstrOBOY03"
+            keyAlias "adi"
+            keyPassword "AstrOBOY03"
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

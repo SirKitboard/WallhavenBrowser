@@ -1,7 +1,9 @@
 package com.sirkitboard.wallhavenbrowser.app;
 
 import android.app.Application;
+import android.content.Context;
 
+import com.sirkitboard.wallhavenbrowser.util.WallhavenImage;
 import com.sirkitboard.wallhavenbrowser.util.WallhavenImageCache;
 
 /**
@@ -9,9 +11,15 @@ import com.sirkitboard.wallhavenbrowser.util.WallhavenImageCache;
  */
 public class WallhavenBrowser extends Application {
 
+	static WallhavenBrowser self;
 
 	public void onCreate() {
 		super.onCreate();
+		self = this;
+	}
 
+	public static Context getContext()
+	{
+		return self.getApplicationContext();
 	}
 }

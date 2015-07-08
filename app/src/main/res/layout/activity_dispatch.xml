@@ -70,11 +70,11 @@
     <android.support.v7.widget.RecyclerView
         android:layout_marginTop="10dp"
         android:id="@+id/latestRecycler"
-        android:scrollbar="horizontal"
         android:layout_below="@id/latestText"
         android:layout_width="match_parent"
-        android:layout_height="150px"
-        android:background="#222222"/>
+        android:layout_height="220px"
+        android:background="#222222"
+        android:scrollbars="horizontal"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -89,11 +89,11 @@
     <android.support.v7.widget.RecyclerView
         android:layout_marginTop="10dp"
         android:id="@+id/randomRecycler"
-        android:scrollbar="horizontal"
         android:layout_below="@id/randomText"
         android:layout_width="match_parent"
-        android:layout_height="150px"
-        android:background="#222222"/>
+        android:layout_height="220px"
+        android:background="#222222"
+        android:scrollbars="horizontal"/>
 
 
 </RelativeLayout>

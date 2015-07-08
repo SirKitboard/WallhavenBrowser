@@ -14,7 +14,7 @@
         android:id="@+id/wallpaperPreview"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"/>
-    
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
