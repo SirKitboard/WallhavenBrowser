@@ -20,8 +20,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.sirkitboard.wallhavenbrowser.R;
+import com.sirkitboard.wallhavenbrowser.app.WallhavenBrowser;
+import com.sirkitboard.wallhavenbrowser.util.BitmapLoader;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -39,7 +42,11 @@ public class WallpaperActivity extends Activity {
 	Bitmap scaled;
 	ImageView imageView;
 	ProgressDialog progress;
+	Toast toast;
 	static final int SET_WALLPAPER = 1;
+	BitmapLoader bitmapLoader;
+	boolean wallpaperSaved;
+	boolean loaded;
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_wallpaper);
@@ -48,15 +55,22 @@ public class WallpaperActivity extends Activity {
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 		}
-		progress = new ProgressDialog(this);
-		progress.setTitle("Loading");
-		progress.setMessage("Wait while loading...");
-		progress.show();
 		imageView = (ImageView)findViewById(R.id.wallpaperPreview);
 		wallID = getIntent().getIntExtra("wallID",0);
-		SetImagePreview sip = new SetImagePreview();
-		sip.execute(wallID);
+		bitmapLoader = WallhavenBrowser.getBitmapLoader();
+		loaded = false;
+	}
 
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		// TODO Auto-generated method stub
+		super.onWindowFocusChanged(hasFocus);
+		//Here you can get the size!
+		//Log.d("HeightWidth",imageView.getWidth()+" "+imageView.getHeight());
+		if(!loaded) {
+			wallpaperSaved = bitmapLoader.loadWallpaper(wallID, imageView);
+			loaded = true;
+		}
 	}
 
 	@Override
@@ -112,15 +126,34 @@ public class WallpaperActivity extends Activity {
 		}
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		// Check which request we're responding to
-		if (requestCode == SET_WALLPAPER) {
-			// Make sure the request was successful
-				String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/temp";
-				File dir = new File(file_path);
-				File file = new File(dir, "wallpaper.jpg");
-				file.delete();
+	public void openInGallery(View view) {
+		String file_path;
+		File file;
+		if(!wallpaperSaved) {
+			file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.jpg";
+			file = new File(file_path);
+			if (!file.exists()) {
+				file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.png";
+				file = new File(file_path);
+			}
+		}
+		else {
+			file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/"+wallID+".jpg";
+			file = new File(file_path);
+			if (!file.exists()) {
+				file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/"+wallID+".png";
+				file = new File(file_path);
+			}
+		}
+		if(file.exists()) {
+			Intent intent = new Intent();
+			intent.setAction(Intent.ACTION_VIEW);
+			Uri uri = Uri.fromFile(file);
+			intent.setDataAndType(uri, "image/*");
+			startActivityForResult(intent, SET_WALLPAPER);
+		}
+		else {
+			showToast("ERROR");
 		}
 	}
 
@@ -148,39 +181,48 @@ public class WallpaperActivity extends Activity {
 	}
 
 	public void saveWallpaper(View v) {
-		try {
-			String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/temp";
-			File dir = new File(file_path);
-			if (!dir.exists())
-				dir.mkdirs();
-			File file = new File(dir, wallID + ".jpg");
-			FileOutputStream fOut = new FileOutputStream(file);
-			full.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
-			fOut.flush();
-			fOut.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(!wallpaperSaved) {
+			wallpaperSaved = bitmapLoader.saveWallpaper(wallID);
+			if(wallpaperSaved) {
+				showToast("Wallpaper Saved");
+			}
+			else {
+				showToast("error");
+			}
+		}
+		else {
+			showToast("Already Saved");
 		}
 	}
-	private class SetImagePreview extends AsyncTask<Integer, String, String> {
+
+	private class SaveThumbnailAsyncTask extends AsyncTask<Integer, String, String> {
+		Bitmap thumb;
 		@Override
 		protected String doInBackground(Integer... params) {
 			try {
-				String url = "http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-" + params[0] + ".jpg";
-				URL imageURL = new URL(url);
-				HttpURLConnection conn = (HttpURLConnection)imageURL.openConnection();
+				String url = "http://alpha.wallhaven.cc/wallpapers/thumb/small/th-"+params[0]+".jpg";
+				URL imageUrl = new URL(url);
+				HttpURLConnection conn = (HttpURLConnection)imageUrl.openConnection();
 				conn.connect();
-				if(conn.getResponseCode() > 400) {
-					url = "http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-" + params[0] + ".png";
-					imageURL = new URL(url);
-					conn = (HttpURLConnection)imageURL.openConnection();
-					conn.connect();
-				}
 				InputStream is = conn.getInputStream();
 				BufferedInputStream bis = new BufferedInputStream(is);
-				full = BitmapFactory.decodeStream(bis);
+				thumb = BitmapFactory.decodeStream(bis);
 				bis.close();
 				is.close();
+				showToast("Thumb received");
+				String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.thumb/";
+				File dir = new File(file_path);
+				if (!dir.exists()) {
+					File file = new File(file_path+".nomedia");
+					file.createNewFile();
+					dir.mkdirs();
+				}
+				File file = new File(dir, wallID + ".jpg");
+				FileOutputStream fOut = new FileOutputStream(file);
+				thumb.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+				fOut.flush();
+				fOut.close();
+				showToast("Saved");
 				return "success";
 			} catch (MalformedURLException e) {
 				Log.e("SetWallpaper", "Malformed URL");
@@ -191,23 +233,13 @@ public class WallpaperActivity extends Activity {
 			}
 			return "fail";
 		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			scaled = scaleDown(full,imageView.getWidth(),true);
-			imageView.setImageBitmap(scaled);
-			progress.dismiss();
-		}
 	}
 
-	public static Bitmap scaleDown(Bitmap realImage, float maxImageSize,
-	                               boolean filter) {
-		float ratio = (float) maxImageSize / realImage.getWidth();
-		int width = Math.round((float) ratio * realImage.getWidth());
-		int height = Math.round((float) ratio * realImage.getHeight());
-
-		Bitmap newBitmap = Bitmap.createScaledBitmap(realImage, width,
-				height, filter);
-		return newBitmap;
+	public void showToast(String text) {
+		if(toast!=null) {
+			toast.cancel();
+		}
+		toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+		toast.show();
 	}
 }

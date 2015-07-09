@@ -36,17 +36,12 @@ public class DispatchActivity extends Activity {
 	ArrayList<Integer> randomWallpapers;
 	public static ImageThumbOnClickListener myOnlClickListener;
 	Toast toast;
-	final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-	final int cacheSize = maxMemory / 8;
 	Switch mSfwSwitch;
 	Switch mSketchySwitch;
-	WallhavenImageCache imageCache;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_dispatch);
-		imageCache = new WallhavenImageCache(cacheSize);
-		showToast(cacheSize + "");
 		latestWallpaperIDs = new ArrayList<>();
 		randomWallpapers = new ArrayList<>();
 		myOnlClickListener  = new ImageThumbOnClickListener();
@@ -58,7 +53,7 @@ public class DispatchActivity extends Activity {
 		mLatestRecyclerView.setHasFixedSize(true);
 		mLatestLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
 		mLatestRecyclerView.setLayoutManager(mLatestLayoutManager);
-		mLatestAdapter = new ImageRecyclerAdapter(latestWallpaperIDs,imageCache);
+		mLatestAdapter = new ImageRecyclerAdapter(latestWallpaperIDs);
 		mLatestRecyclerView.setAdapter(mLatestAdapter);
 
 		//Random
@@ -66,7 +61,7 @@ public class DispatchActivity extends Activity {
 		mRandomRecyclerView.setHasFixedSize(true);
 		mRandomLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
 		mRandomRecyclerView.setLayoutManager(mRandomLayoutManager);
-		mRandomAdapter = new ImageRecyclerAdapter(randomWallpapers,imageCache);
+		mRandomAdapter = new ImageRecyclerAdapter(randomWallpapers);
 		mRandomRecyclerView.setAdapter(mRandomAdapter);
 
 		refresh();
@@ -96,23 +91,23 @@ public class DispatchActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	public void showImage(View v) {
-		int position = mLatestRecyclerView.getChildAdapterPosition(v);
-		int wallID = 0;
-		if(position == -1) {
-			showToast("hi");
-			position = mRandomRecyclerView.getChildAdapterPosition(v);
-			wallID = randomWallpapers.get(position);
-		}
-		else {
-			wallID = latestWallpaperIDs.get(position);
-		}
-
-		Intent intent = new Intent(getApplicationContext(), WallpaperActivity.class);
-		intent.putExtra("wallID", wallID);
-		startActivity(intent);
-
-	}
+//	public static void showImage(View v) {
+//		int position = mLatestRecyclerView.getChildAdapterPosition(v);
+//		int wallID = 0;
+//		if(position == -1) {
+//			showToast("hi");
+//			position = mRandomRecyclerView.getChildAdapterPosition(v);
+//			wallID = randomWallpapers.get(position);
+//		}
+//		else {
+//			wallID = latestWallpaperIDs.get(position);
+//		}
+//
+//		Intent intent = new Intent(getApplicationContext(), WallpaperActivity.class);
+//		intent.putExtra("wallID", wallID);
+//		startActivity(intent);
+//
+//	}
 
 	public void addWallpapersToDataset(ArrayList<Integer> ta, ArrayList<Integer> tba) {
 		ta.clear();
@@ -124,7 +119,7 @@ public class DispatchActivity extends Activity {
 	public class ImageThumbOnClickListener implements View.OnClickListener{
 		@Override
 		public void onClick(View v) {
-			showImage(v);
+		//	showImage(v);
 		}
 	}
 
