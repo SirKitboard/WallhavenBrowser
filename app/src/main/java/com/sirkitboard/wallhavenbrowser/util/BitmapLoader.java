@@ -164,6 +164,46 @@ public class BitmapLoader {
 		}
 	}
 
+	class BitmapWorkerFileTask extends AsyncTask<Integer, Void, Bitmap> {
+		private final WeakReference<ImageView> imageViewReference;
+		private int data = 0;
+
+		public BitmapWorkerFileTask(ImageView imageView) {
+			// Use a WeakReference to ensure the ImageView can be garbage collected
+			imageViewReference = new WeakReference<ImageView>(imageView);
+		}
+
+		// Decode image in background.
+		@Override
+		protected Bitmap doInBackground(Integer... params) {
+			data = params[0];
+			Bitmap wallThumb = null;
+			String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/sm-"+data+".jpg";
+			wallThumb = BitmapFactory.decodeFile(file_path);
+			return wallThumb;
+		}
+
+		// Once complete, see if ImageView is still around and set bitmap.
+		@Override
+		protected void onPostExecute(Bitmap bitmap) {
+			if (imageViewReference != null && bitmap != null) {
+				if (isCancelled()) {
+					bitmap = null;
+				}
+
+				if (imageViewReference != null && bitmap != null) {
+					final ImageView imageView = imageViewReference.get();
+					final BitmapWorkerFileTask bitmapWorkerTask =
+							getBitmapWorkerFileTask(imageView);
+					if (this == bitmapWorkerTask && imageView != null) {
+						imageCache.addBitmapToMemoryCache(String.valueOf(data), bitmap);
+						imageView.setImageBitmap(bitmap);
+					}
+				}
+			}
+		}
+	}
+
 	static class AsyncDrawable extends BitmapDrawable {
 		private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
 
@@ -179,6 +219,21 @@ public class BitmapLoader {
 		}
 	}
 
+	static class AsyncFileDrawable extends BitmapDrawable {
+		private final WeakReference<BitmapWorkerFileTask> bitmapWorkerTaskReference;
+
+		public AsyncFileDrawable(Resources res, Bitmap bitmap,
+		                     BitmapWorkerFileTask bitmapWorkerTask) {
+			super(res, bitmap);
+			bitmapWorkerTaskReference =
+					new WeakReference<BitmapWorkerFileTask>(bitmapWorkerTask);
+		}
+
+		public BitmapWorkerFileTask getBitmapWorkerTask() {
+			return bitmapWorkerTaskReference.get();
+		}
+	}
+
 	public void loadBitmapThumbnail(int wallID, ImageView imageView) {
 		final String imageKey = String.valueOf(wallID);
 		Bitmap bitmap = imageCache.getBitmapFromMemCache(imageKey);
@@ -187,11 +242,31 @@ public class BitmapLoader {
 			return;
 		}
 		else if (cancelPotentialWork(wallID, imageView)) {
-			final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
-			final AsyncDrawable asyncDrawable = 	new AsyncDrawable(WallhavenBrowser.getContext().getResources(), mPlaceHolderBitmap, task);
-			imageView.setImageDrawable(asyncDrawable);
-			task.execute(wallID);
+			if(wallList.contains(wallID) && smallThumbExists(wallID)) {
+				final BitmapWorkerFileTask task = new BitmapWorkerFileTask(imageView);
+				final AsyncFileDrawable asyncDrawable = new AsyncFileDrawable(WallhavenBrowser.getContext().getResources(), mPlaceHolderBitmap, task);
+				imageView.setImageDrawable(asyncDrawable);
+				task.execute(wallID);
+			}
+			else {
+				final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
+				final AsyncDrawable asyncDrawable = new AsyncDrawable(WallhavenBrowser.getContext().getResources(), mPlaceHolderBitmap, task);
+				imageView.setImageDrawable(asyncDrawable);
+				task.execute(wallID);
+			}
 		}
+	}
+
+	public boolean smallThumbExists(int wallID) {
+		String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/sm-"+wallID+".jpg";
+		File file = new File(file_path);
+		return file.exists();
+	}
+
+	public Bitmap getWallpaperThumbnail(int wallID) {
+		final String imageKey = String.valueOf(wallID);
+		Bitmap bitmap = imageCache.getBitmapFromMemCache(imageKey);
+		return bitmap;
 	}
 
 	public static boolean cancelPotentialWork(int data, ImageView imageView) {
@@ -217,6 +292,17 @@ public class BitmapLoader {
 			final Drawable drawable = imageView.getDrawable();
 			if (drawable instanceof AsyncDrawable) {
 				final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
+				return asyncDrawable.getBitmapWorkerTask();
+			}
+		}
+		return null;
+	}
+
+	private static BitmapWorkerFileTask getBitmapWorkerFileTask(ImageView imageView) {
+		if (imageView != null) {
+			final Drawable drawable = imageView.getDrawable();
+			if (drawable instanceof AsyncDrawable) {
+				final AsyncFileDrawable asyncDrawable = (AsyncFileDrawable) drawable;
 				return asyncDrawable.getBitmapWorkerTask();
 			}
 		}
@@ -340,12 +426,69 @@ public class BitmapLoader {
 				tempref.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
 				fOut.flush();
 				fOut.close();
+				saveThumb(wallID);
 				return true;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		return false;
+	}
+
+	public void saveThumb(int wallID) {
+		Bitmap bitmap = getWallpaperThumbnail(wallID);
+		if(bitmap != null) {
+			saveThumbToFile(bitmap,wallID);
+		}
+		else {
+			SaveThumbnailFromInternet stft = new SaveThumbnailFromInternet();
+			stft.execute(wallID);
+		}
+	}
+
+	public void saveThumbToFile(Bitmap thumb, int wallID) {
+		try {
+			String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/sm-"+wallID+".jpg";
+			File file = new File(file_path);
+			FileOutputStream fOut = new FileOutputStream(file);
+			thumb.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+			fOut.flush();
+			fOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public class SaveThumbnailFromInternet extends AsyncTask<Integer, Void, Bitmap> {
+		@Override
+		protected Bitmap doInBackground(Integer... params) {
+			int data = params[0];
+			File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/sm-"+data+".jpg");
+			Bitmap wallThumb = null;
+			String url = "http://alpha.wallhaven.cc/wallpapers/thumb/small/th-" + data + ".jpg";
+			try {
+				URL imageURL = new URL(url);
+				HttpURLConnection conn = (HttpURLConnection) imageURL.openConnection();
+
+				InputStream is = conn.getInputStream();
+				OutputStream output = new FileOutputStream(path);
+				try {
+					byte[] buffer = new byte[1024];
+					int bytesRead = 0;
+					while ((bytesRead = is.read(buffer, 0, buffer.length)) >= 0) {
+						output.write(buffer, 0, bytesRead);
+					}
+				} finally {
+					output.close();
+					is.close();
+				}
+			} catch (MalformedURLException e) {
+
+			} catch (IOException e){
+
+			}
+			return wallThumb;
+		}
 	}
 
 	public static Bitmap scaleDown(Bitmap realImage, float maxImageWidth, float maxImageheight,

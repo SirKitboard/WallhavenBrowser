@@ -33,7 +33,7 @@ public class DispatchActivityCacheBackup extends Activity {
 			imageCache = new WallhavenImageCache(cacheSize);
 			retainFragment.mRetainedCache = imageCache;
 		}
-		setContentView(R.layout.activity_dispatch_backup);
+		setContentView(R.layout.fragment_browse);
 	}
 
 	class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
