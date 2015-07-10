@@ -12,13 +12,14 @@ import android.widget.TextView;
 
 import com.sirkitboard.wallhavenbrowser.R;
 import com.sirkitboard.wallhavenbrowser.activities.ExploreFragment;
+import com.sirkitboard.wallhavenbrowser.activities.SavedFragment;
 
 /**
  * Created by Aditya on 7/9/2015.
  */
 public class DispatchFragmentPagerAdapter extends FragmentPagerAdapter {
-	final int PAGE_COUNT = 1;
-	private String tabTitles[] = new String[] { "Tab1", "Tab2" };
+	final int PAGE_COUNT = 2;
+	private String tabTitles[] = new String[] { "Browse", "Saved" };
 
 	private Context context;
 
@@ -34,7 +35,13 @@ public class DispatchFragmentPagerAdapter extends FragmentPagerAdapter {
 
 	@Override
 	public Fragment getItem(int position) {
-		return ExploreFragment.newInstance(position + 1);
+		if(position == 0) {
+			return ExploreFragment.newInstance(position + 1);
+		}
+		else if(position == 1) {
+			return SavedFragment.newInstance(position + 1);
+		}
+		return null;
 	}
 
 	@Override
@@ -47,9 +54,12 @@ public class DispatchFragmentPagerAdapter extends FragmentPagerAdapter {
 		// Given you have a custom layout in `res/layout/custom_tab.xml` with a TextView and ImageView
 		View v = null;
 		Log.e("TabNum",position + "");
-		if(position == 1) {
-			v =  LayoutInflater.from(context).inflate(R.layout.fragment_browse, null);
-		}
+//		if(position == 0) {
+//			v =  LayoutInflater.from(context).inflate(R.layout.fragment_browse, null);
+//		}
+//		else if(position == 1) {
+//			v =  LayoutInflater.from(context).inflate(R.layout.fragment_saved, null);
+//		}
 		return v;
 	}
 }

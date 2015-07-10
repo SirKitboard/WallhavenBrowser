@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Switch;
@@ -54,6 +57,7 @@ public class ExploreFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mPage = getArguments().getInt(ARG_PAGE);
+		setHasOptionsMenu(true);
 	}
 
 	@Override
@@ -124,6 +128,16 @@ public class ExploreFragment extends Fragment {
 			addWallpapersToDataset(latestWallpaperIDs, wallpaperIDs);
 			mLatestAdapter.notifyDataSetChanged();
 		}
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		//noinspection SimplifiableIfStatement
+		if (id == R.id.action_reload) {
+			refresh();
+			return true;
+		}
+		return false;
 	}
 
 	private class GetRandomWallpaperAsyncTask extends AsyncTask<String,String, String> {

@@ -49,8 +49,12 @@ public class BitmapLoader {
 	public BitmapLoader() {
 		imageCache = new WallhavenImageCache(cacheSize);
 		wallList = new ArrayList<>();
+		makeDirectories();
 		String path = Environment.getExternalStorageDirectory().toString()+"/Wallhaven/";
 		File f = new File(path);
+		if(!f.exists()) {
+			f.mkdirs();
+		}
 		File file[] = f.listFiles();
 		fileNames = new ArrayList<>();
 		for (int i=0; i < file.length; i++)
@@ -62,6 +66,23 @@ public class BitmapLoader {
 			}
 		}
 		mPlaceHolderBitmap = BitmapFactory.decodeResource(WallhavenBrowser.getContext().getResources(), R.drawable.loading);
+	}
+
+	public void makeDirectories() {
+		try {
+			String path = Environment.getExternalStorageDirectory().toString()+"/Wallhaven/.temp/";
+			File file = new File(path);
+			if(!file.exists()){
+				file.mkdirs();
+				File file2 = new File(path+".nomedia");
+				file.createNewFile();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public ArrayList<String> getWallList() {
+		return wallList;
 	}
 
 	public static int calculateInSampleSize(
@@ -313,7 +334,7 @@ public class BitmapLoader {
 		imageView.setImageBitmap(mPlaceHolderBitmap);
 		if(wallList.contains(wallID + "")) {
 			Log.d("FileTest","Found in List");
-			String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.thumb/" + "th-"+wallID+".jpg";
+			String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/" + "th-"+wallID+".jpg";
 			File file = new File(path);
 			if(file.exists()) {
 				Log.d("FileTest","File exists");
@@ -426,6 +447,8 @@ public class BitmapLoader {
 				tempref.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
 				fOut.flush();
 				fOut.close();
+				wallList.add(wallID+"");
+				fileNames.add(wallID+extension);
 				saveThumb(wallID);
 				return true;
 			} catch (IOException e) {

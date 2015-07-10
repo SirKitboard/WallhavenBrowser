@@ -210,7 +210,7 @@ public class WallpaperActivity extends Activity {
 				bis.close();
 				is.close();
 				showToast("Thumb received");
-				String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.thumb/";
+				String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/";
 				File dir = new File(file_path);
 				if (!dir.exists()) {
 					File file = new File(file_path+".nomedia");
