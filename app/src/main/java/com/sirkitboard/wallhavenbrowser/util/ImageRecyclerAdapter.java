@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sirkitboard.wallhavenbrowser.R;
+import com.sirkitboard.wallhavenbrowser.activities.BrowseActivity;
 import com.sirkitboard.wallhavenbrowser.activities.DispatchActivity;
 import com.sirkitboard.wallhavenbrowser.activities.MainActivity;
 import com.sirkitboard.wallhavenbrowser.activities.WallpaperActivity;
@@ -59,6 +60,34 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdap
 				}
 			});
 		}
+
+		public ViewHolder(View itemview, int state) {
+			super(itemview);
+			if(state == -1) {
+				mImageView = (ImageView) itemview.findViewById(R.id.wallpaperPreview);
+				itemview.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Intent intent = new Intent(WallhavenBrowser.getContext(), BrowseActivity.class);
+						intent.putExtra("url", URLBuilder.getURLforLatest());
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						WallhavenBrowser.getContext().startActivity(intent);
+					}
+				});
+			}
+			if(state == -2) {
+				mImageView = (ImageView) itemview.findViewById(R.id.wallpaperPreview);
+				itemview.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Intent intent = new Intent(WallhavenBrowser.getContext(), BrowseActivity.class);
+						intent.putExtra("url", URLBuilder.getURLforRandom());
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						WallhavenBrowser.getContext().startActivity(intent);
+					}
+				});
+			};
+		}
 	}
 
 	// Provide a suitable constructor (depends on the kind of dataset)
@@ -71,10 +100,32 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdap
 	@Override
 	public ImageRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
 	                                               int viewType) {
+		View v;
+		ViewHolder vh;
 		// create a new view
-		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.thumbnailview, parent, false);
+		if(viewType == -1) {
+			v = LayoutInflater.from(parent.getContext()).inflate(R.layout.thumbnailview, parent, false);
+			vh = new ViewHolder(v,-1);
+		}
+		else if(viewType == -2) {
+			v = LayoutInflater.from(parent.getContext()).inflate(R.layout.thumbnailview, parent, false);
+			vh = new ViewHolder(v,-2);
+		}
+		else if(viewType == -3) {
+			v = LayoutInflater.from(parent.getContext()).inflate(R.layout.progressbar, parent, false);
+			vh = new ViewHolder(v,-3);
+		}
+		else if(viewType == -4) {
+			v = LayoutInflater.from(parent.getContext()).inflate(R.layout.endofresults, parent, false);
+			vh = new ViewHolder(v,-4);
+		}
+		else {
+			v = LayoutInflater.from(parent.getContext()).inflate(R.layout.thumbnailview, parent, false);
+			vh = new ViewHolder(v);
+		}
+
 		// set the view's size, margins, paddings and layout parameters
-		ViewHolder vh = new ViewHolder(v);
+
 		return vh;
 	}
 
@@ -83,8 +134,18 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdap
 	public void onBindViewHolder(ViewHolder holder, int position) {
 		// - get element from your dataset at this position
 		// - replace the contents of the view with that element
-		bitmapLoader.loadBitmapThumbnail(mDataset.get(position),holder.mImageView);
+		int viewType = getItemViewType(position);
+		if(viewType >-3)
+			bitmapLoader.loadBitmapThumbnail(mDataset.get(position),holder.mImageView);
 
+	}
+
+	@Override
+	public int getItemViewType(int position) {
+		if(mDataset.get(position) >= 0) {
+			return 0;
+		}
+		else return mDataset.get(position);
 	}
 
 	// Return the size of your dataset (invoked by the layout manager)
@@ -92,6 +153,5 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdap
 	public int getItemCount() {
 		return mDataset.size();
 	}
-
 
 }

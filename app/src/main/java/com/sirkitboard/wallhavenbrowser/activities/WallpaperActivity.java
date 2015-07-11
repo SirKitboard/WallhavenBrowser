@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class WallpaperActivity extends Activity {
+public class WallpaperActivity extends AppCompatActivity {
 	int wallID;
 	Bitmap full;
 	Bitmap scaled;
@@ -192,46 +193,6 @@ public class WallpaperActivity extends Activity {
 		}
 		else {
 			showToast("Already Saved");
-		}
-	}
-
-	private class SaveThumbnailAsyncTask extends AsyncTask<Integer, String, String> {
-		Bitmap thumb;
-		@Override
-		protected String doInBackground(Integer... params) {
-			try {
-				String url = "http://alpha.wallhaven.cc/wallpapers/thumb/small/th-"+params[0]+".jpg";
-				URL imageUrl = new URL(url);
-				HttpURLConnection conn = (HttpURLConnection)imageUrl.openConnection();
-				conn.connect();
-				InputStream is = conn.getInputStream();
-				BufferedInputStream bis = new BufferedInputStream(is);
-				thumb = BitmapFactory.decodeStream(bis);
-				bis.close();
-				is.close();
-				showToast("Thumb received");
-				String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/";
-				File dir = new File(file_path);
-				if (!dir.exists()) {
-					File file = new File(file_path+".nomedia");
-					file.createNewFile();
-					dir.mkdirs();
-				}
-				File file = new File(dir, wallID + ".jpg");
-				FileOutputStream fOut = new FileOutputStream(file);
-				thumb.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
-				fOut.flush();
-				fOut.close();
-				showToast("Saved");
-				return "success";
-			} catch (MalformedURLException e) {
-				Log.e("SetWallpaper", "Malformed URL");
-			} catch (IOException e) {
-				Log.e("SetWallpaper", "IO");
-			} catch (Exception e) {
-				Log.e("SetWallpaper", "Out of memory");
-			}
-			return "fail";
 		}
 	}
 

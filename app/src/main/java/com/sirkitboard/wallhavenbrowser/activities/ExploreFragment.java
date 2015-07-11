@@ -1,22 +1,20 @@
 package com.sirkitboard.wallhavenbrowser.activities;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import com.sirkitboard.wallhavenbrowser.R;
 import com.sirkitboard.wallhavenbrowser.util.ImageRecyclerAdapter;
+import com.sirkitboard.wallhavenbrowser.util.URLBuilder;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -40,6 +38,7 @@ public class ExploreFragment extends Fragment {
 	ArrayList<Integer> randomWallpapers;
 	Switch mSfwSwitch;
 	Switch mSketchySwitch;
+	SharedPreferences mSharedPreferences;
 
 	public static final String ARG_PAGE = "ARG_PAGE";
 
@@ -89,13 +88,6 @@ public class ExploreFragment extends Fragment {
 		return view;
 	}
 
-	public String getPurity() {
-		String purity = "";
-		purity+=mSfwSwitch.isChecked() ? "1" : "0";
-		purity+=mSketchySwitch.isChecked() ? "1" : "0";
-		return purity+"0";
-	}
-
 	public void refresh() {
 		GetLatestWallpaperAsyncTask gwat = new GetLatestWallpaperAsyncTask();
 		gwat.execute();
@@ -108,7 +100,7 @@ public class ExploreFragment extends Fragment {
 		@Override
 		protected String doInBackground(String... uri) {
 			try {
-				String url = "http://alpha.wallhaven.cc/search?categories=111&purity="+getPurity()+"&sorting=date_added&order=desc";
+				String url = URLBuilder.getURLforLatest();
 				Document document = Jsoup.connect(url).get();
 				Elements results = document.select(".thumb-listing-page ul li figure");
 				wallpaperIDs = new ArrayList<Integer>();
@@ -125,6 +117,7 @@ public class ExploreFragment extends Fragment {
 
 		@Override
 		protected void onPostExecute(String result) {
+			wallpaperIDs.add(-1);
 			addWallpapersToDataset(latestWallpaperIDs, wallpaperIDs);
 			mLatestAdapter.notifyDataSetChanged();
 		}
@@ -145,7 +138,7 @@ public class ExploreFragment extends Fragment {
 		@Override
 		protected String doInBackground(String... uri) {
 			try {
-				String url = "http://alpha.wallhaven.cc/search?categories=111&purity="+getPurity()+"&sorting=random&order=desc";
+				String url = URLBuilder.getURLforRandom();
 				Document document = Jsoup.connect(url).get();
 				Elements results = document.select(".thumb-listing-page ul li figure");
 				wallpaperIDs = new ArrayList<Integer>();
@@ -158,10 +151,12 @@ public class ExploreFragment extends Fragment {
 			}
 			// Do updating and stopping logical here.
 			return "success";
+
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
+			wallpaperIDs.add(-2);
 			addWallpapersToDataset(randomWallpapers, wallpaperIDs);
 			mRandomAdapter.notifyDataSetChanged();
 		}

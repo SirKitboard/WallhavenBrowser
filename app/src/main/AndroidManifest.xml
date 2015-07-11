@@ -22,16 +22,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.Browser"
-            android:label="@string/title_activity_browser" >
+            android:name=".activities.BrowseActivity"
+            android:label="@string/title_activity_browser"
+            android:parentActivityName=".activities.DispatchActivity">
         </activity>
         <activity
             android:name=".activities.WallpaperActivity"
-            android:label="@string/title_activity_wallpaper" >
-        </activity>
-        <activity
-            android:name=".activities.DispatchActivityCacheBackup"
-            android:label="@string/title_activity_dispatch" >
+            android:label="@string/title_activity_wallpaper"
+            android:parentActivityName=".activities.DispatchActivity">
         </activity>
     </application>
 

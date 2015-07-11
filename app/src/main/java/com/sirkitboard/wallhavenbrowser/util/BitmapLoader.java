@@ -44,6 +44,7 @@ public class BitmapLoader {
 	ArrayList<String> wallList;
 	ArrayList<String> fileNames;
 	Bitmap mPlaceHolderBitmap;
+	Bitmap loadingBitmap;
 	String extension;
 	Bitmap tempref;
 	public BitmapLoader() {
@@ -52,9 +53,6 @@ public class BitmapLoader {
 		makeDirectories();
 		String path = Environment.getExternalStorageDirectory().toString()+"/Wallhaven/";
 		File f = new File(path);
-		if(!f.exists()) {
-			f.mkdirs();
-		}
 		File file[] = f.listFiles();
 		fileNames = new ArrayList<>();
 		for (int i=0; i < file.length; i++)
@@ -66,6 +64,7 @@ public class BitmapLoader {
 			}
 		}
 		mPlaceHolderBitmap = BitmapFactory.decodeResource(WallhavenBrowser.getContext().getResources(), R.drawable.loading);
+		loadingBitmap = BitmapFactory.decodeResource(WallhavenBrowser.getContext().getResources(), R.drawable.loadmore);
 	}
 
 	public void makeDirectories() {
@@ -114,7 +113,7 @@ public class BitmapLoader {
 		final BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
 		Bitmap wallpaperThumb = null;
-		String url = "http://alpha.wallhaven.cc/wallpapers/thumb/small/th-"+wallID+".jpg";
+		String url = URLBuilder.getURLForThumb(wallID);
 		URL imageURL = new URL(url);
 		URLConnection conn = imageURL.openConnection();
 		conn.connect();
@@ -148,7 +147,7 @@ public class BitmapLoader {
 		protected Bitmap doInBackground(Integer... params) {
 			data = params[0];
 			Bitmap wallThumb = null;
-			String url = "http://alpha.wallhaven.cc/wallpapers/thumb/small/th-"+data+".jpg";
+			String url = URLBuilder.getURLForThumb(data);
 			try {
 				URL imageURL = new URL(url);
 				URLConnection conn = imageURL.openConnection();
@@ -256,6 +255,11 @@ public class BitmapLoader {
 	}
 
 	public void loadBitmapThumbnail(int wallID, ImageView imageView) {
+		if(wallID == -1 || wallID == -2) {
+			imageView.setImageBitmap(loadingBitmap);
+			return;
+		}
+
 		final String imageKey = String.valueOf(wallID);
 		Bitmap bitmap = imageCache.getBitmapFromMemCache(imageKey);
 		if(bitmap!=null) {
@@ -381,13 +385,13 @@ public class BitmapLoader {
 		@Override
 		protected String doInBackground(Integer... params) {
 			try {
-				String url = "http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-" + params[0] + ".jpg";
+				String url = URLBuilder.getURLForWall(params[0],".jpg");
 				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.jpg";
 				URL imageURL = new URL(url);
 				HttpURLConnection conn = (HttpURLConnection)imageURL.openConnection();
 				conn.connect();
 				if(conn.getResponseCode() > 400) {
-					url = "http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-" + params[0] + ".png";
+					url = URLBuilder.getURLForWall(params[0],".png");
 					path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.png";
 					extension = ".png";
 					imageURL = new URL(url);
@@ -488,7 +492,7 @@ public class BitmapLoader {
 			int data = params[0];
 			File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/sm-"+data+".jpg");
 			Bitmap wallThumb = null;
-			String url = "http://alpha.wallhaven.cc/wallpapers/thumb/small/th-" + data + ".jpg";
+			String url = URLBuilder.getURLForThumb(data);
 			try {
 				URL imageURL = new URL(url);
 				HttpURLConnection conn = (HttpURLConnection) imageURL.openConnection();

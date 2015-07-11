@@ -10,26 +10,23 @@ apply plugin: 'com.android.application'
             versionCode 1
             versionName "1.0"
         }
-        if(project.hasProperty("MyProject.properties") && new File(project.property("MyProject.properties")).exists()) {
-            Properties props = new Properties()
-            props.load(new FileInputStream(file(project.property("MyProject.properties"))))
-            signingConfigs {
-                release {
-                    storeFile file("C:\\Users\\Aditya\\AndroidKeyStore\\AdiKey.jks")
-                    storePassword props['keystore.password']
-                    keyAlias "adi"
-                    keyPassword props['keystore.password']
-                }
+        signingConfigs {
+            release {
+                storeFile file("C:\\Users\\Aditya\\AndroidKeyStore\\AdiKey.jks")
+                storePassword password
+                keyAlias alias
+                keyPassword password
             }
-            buildTypes {
-                release {
-                    signingConfig signingConfigs.release
-                    minifyEnabled false
-                    proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-                }
+        }
+        buildTypes {
+            release {
+                signingConfig signingConfigs.release
+                minifyEnabled false
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             }
         }
     }
+
 
 
 dependencies {
