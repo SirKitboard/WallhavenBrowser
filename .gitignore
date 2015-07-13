@@ -7,3 +7,4 @@
 /captures
 
 gradle.properties
+app/src/main/res/values/keys.xml

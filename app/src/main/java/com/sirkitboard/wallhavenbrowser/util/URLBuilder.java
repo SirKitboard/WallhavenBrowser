@@ -1,6 +1,7 @@
 package com.sirkitboard.wallhavenbrowser.util;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.sirkitboard.wallhavenbrowser.app.WallhavenBrowser;
 
@@ -38,7 +39,8 @@ public class URLBuilder {
 	}
 
 	public static String getPurity() {
-		SharedPreferences sharedPreferences = WallhavenBrowser.getContext().getSharedPreferences("com.sirkitboard.wallhavenbrowser",WallhavenBrowser.getContext().MODE_PRIVATE);
+		SharedPreferences sharedPreferences = WallhavenBrowser.getContext().getSharedPreferences("com.sirkitboard.wallhavenbrowser",WallhavenBrowser.getContext().MODE_APPEND);
+		Log.e("PURITY", sharedPreferences.getString("purity","100"));
 		return "&purity=" + sharedPreferences.getString("purity","100");
 	}
 

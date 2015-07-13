@@ -33,7 +33,7 @@ public class DispatchActivity extends AppCompatActivity {
 				new DispatchFragmentPagerAdapter(getSupportFragmentManager(), DispatchActivity.this);
 		viewPager.setAdapter(pagerAdapter);
 
-		mSharedPreferences = getSharedPreferences("com.sirkitboard.wallhaven", MODE_PRIVATE);
+		mSharedPreferences = getSharedPreferences("com.sirkitboard.wallhavenbrowser", MODE_PRIVATE);
 
 		// Give the TabLayout the ViewPager
 		tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
@@ -53,6 +53,8 @@ public class DispatchActivity extends AppCompatActivity {
 		String purity = "";
 		purity+=sfwSwitch.isChecked() ? "1" : "0";
 		purity+=sketchyToggle.isChecked() ? "1" : "0";
+		if(purity.equalsIgnoreCase("00"))
+			purity = "10";
 		editor.putString("purity", purity + "0");
 		editor.apply();
 	}

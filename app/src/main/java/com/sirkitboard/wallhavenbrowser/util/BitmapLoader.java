@@ -375,6 +375,7 @@ public class BitmapLoader {
 
 	private class SetImagePreview extends AsyncTask<Integer, String, String> {
 		ImageView imageView;float height, width;
+		int data;
 
 		SetImagePreview(ImageView imageView, float width, float height) {
 			this.imageView = imageView;
@@ -385,14 +386,15 @@ public class BitmapLoader {
 		@Override
 		protected String doInBackground(Integer... params) {
 			try {
+				data = params[0];
 				String url = URLBuilder.getURLForWall(params[0],".jpg");
-				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.jpg";
+				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+data+".jpg";
 				URL imageURL = new URL(url);
 				HttpURLConnection conn = (HttpURLConnection)imageURL.openConnection();
 				conn.connect();
 				if(conn.getResponseCode() > 400) {
 					url = URLBuilder.getURLForWall(params[0],".png");
-					path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.png";
+					path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+data+".png";
 					extension = ".png";
 					imageURL = new URL(url);
 					conn = (HttpURLConnection)imageURL.openConnection();
@@ -422,13 +424,13 @@ public class BitmapLoader {
 		@Override
 		protected void onPostExecute(String result) {
 			LoadFromFile lff = new LoadFromFile(imageView,width,height);
-			lff.execute(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper" +extension);
+			lff.execute(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+data+extension);
 		}
 	}
 
 
 	public boolean saveWallpaper(int wallID) {
-		File wallpaper = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+extension);
+		File wallpaper = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+wallID+extension);
 		File dst = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/"+wallID+extension);
 		if(wallpaper.exists()) {
 			FileInputStream inStream;

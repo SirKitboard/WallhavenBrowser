@@ -89,8 +89,8 @@ public class WallpaperActivity extends AppCompatActivity {
 		int id = item.getItemId();
 
 		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
-			return true;
+		if (id == android.R.id.home) {
+			deleteWallpaperTemp();
 		}
 
 		return super.onOptionsItemSelected(item);
@@ -98,29 +98,35 @@ public class WallpaperActivity extends AppCompatActivity {
 
 	public void setAsWallpaper(View view) {
 		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-		if(currentapiVersion > Build.VERSION_CODES.KITKAT) {
-			try {
-				String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/temp";
-				File dir = new File(file_path);
-				if (!dir.exists())
-					dir.mkdirs();
-				File file = new File(dir, "wallpaper.jpg");
-				FileOutputStream fOut = new FileOutputStream(file);
-				full.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
-				fOut.flush();
-				fOut.close();
+		String file_path;
+		File file;
+		if(!wallpaperSaved) {
+			file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+wallID+".jpg";
+			file = new File(file_path);
+			if (!file.exists()) {
+				file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+wallID+".png";
+				file = new File(file_path);
+			}
+		}
+		else {
+			file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/"+wallID+".jpg";
+			file = new File(file_path);
+			if (!file.exists()) {
+				file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/"+wallID+".png";
+				file = new File(file_path);
+			}
+		}
+		if(currentapiVersion >= Build.VERSION_CODES.KITKAT) {
+
 				WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
 				Uri uri = Uri.fromFile(file);
 				Intent intent = wallpaperManager.getCropAndSetWallpaperIntent(getImageContentUri(getApplicationContext(), file.getAbsolutePath()));
 				startActivityForResult(intent,SET_WALLPAPER);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		} else {
 			try {
 				WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-				wallpaperManager.setBitmap(full);
+				wallpaperManager.setBitmap(BitmapFactory.decodeFile(file_path));
+				showToast("Wallpaper Set");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -131,10 +137,10 @@ public class WallpaperActivity extends AppCompatActivity {
 		String file_path;
 		File file;
 		if(!wallpaperSaved) {
-			file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.jpg";
+			file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+wallID+".jpg";
 			file = new File(file_path);
 			if (!file.exists()) {
-				file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper.png";
+				file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+wallID+".png";
 				file = new File(file_path);
 			}
 		}
@@ -202,5 +208,20 @@ public class WallpaperActivity extends AppCompatActivity {
 		}
 		toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
 		toast.show();
+	}
+
+	public void deleteWallpaperTemp() {
+		String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+wallID+".jpg";
+		File file = new File(file_path);
+		if (!file.exists()) {
+			file_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Wallhaven/.temp/wallpaper"+wallID+".png";
+			file = new File(file_path);
+		}
+		file.delete();
+	}
+
+	public void onBackPressed () {
+		deleteWallpaperTemp();
+		super.onBackPressed();
 	}
 }

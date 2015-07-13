@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory
+		android:title="Categories">
+
+		<SwitchPreference
+			android:key="category_general"
+			android:title="General"
+			android:defaultValue="true"/>
+
+		<SwitchPreference
+			android:key="category_anime"
+			android:title="Anime"
+			android:defaultValue="true"/>
+
+		<SwitchPreference
+			android:key="category_people"
+			android:title="People"
+			android:defaultValue="true"/>
+
+	</PreferenceCategory>
+</PreferenceScreen>

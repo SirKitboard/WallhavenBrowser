@@ -1,8 +1,10 @@
 package com.sirkitboard.wallhavenbrowser.activities;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,8 +13,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewTreeObserver;
+import android.widget.Switch;
 
 import com.sirkitboard.wallhavenbrowser.R;
+import com.sirkitboard.wallhavenbrowser.app.WallhavenBrowser;
 import com.sirkitboard.wallhavenbrowser.util.BitmapLoader;
 import com.sirkitboard.wallhavenbrowser.util.GridSpacingItemDecoration;
 import com.sirkitboard.wallhavenbrowser.util.ImageRecyclerAdapter;
@@ -134,11 +138,10 @@ public class BrowseActivity extends AppCompatActivity {
 		@Override
 		protected String doInBackground(String... uri) {
 			try {
+				wallpaperIDs = new ArrayList<Integer>();
 				String url =urlQuery+"&page="+pageNo;
-				Log.e("Weird",url);
 				Document document = Jsoup.connect(url).get();
 				Elements results = document.select(".thumb-listing-page ul li figure");
-				wallpaperIDs = new ArrayList<Integer>();
 				for (Element result : results) {
 					wallpaperIDs.add(Integer.parseInt(result.attr("data-wallpaper-id")));
 				}

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.Switch;
 
 import com.sirkitboard.wallhavenbrowser.R;
+import com.sirkitboard.wallhavenbrowser.app.WallhavenBrowser;
 import com.sirkitboard.wallhavenbrowser.util.ImageRecyclerAdapter;
 import com.sirkitboard.wallhavenbrowser.util.URLBuilder;
 
@@ -38,7 +39,6 @@ public class ExploreFragment extends Fragment {
 	ArrayList<Integer> randomWallpapers;
 	Switch mSfwSwitch;
 	Switch mSketchySwitch;
-	SharedPreferences mSharedPreferences;
 
 	public static final String ARG_PAGE = "ARG_PAGE";
 
@@ -75,7 +75,10 @@ public class ExploreFragment extends Fragment {
 		mLatestRecyclerView.setLayoutManager(mLatestLayoutManager);
 		mLatestAdapter = new ImageRecyclerAdapter(latestWallpaperIDs);
 		mLatestRecyclerView.setAdapter(mLatestAdapter);
-
+		SharedPreferences mSharedPref = WallhavenBrowser.getContext().getSharedPreferences("com.sirkitboard.wallhavenbrowser",  WallhavenBrowser.getContext().MODE_PRIVATE);
+		String purity = mSharedPref.getString("purity","100");
+		mSfwSwitch.setChecked(purity.charAt(0) == '1');
+		mSketchySwitch.setChecked(purity.charAt(1) == '1');
 		//Random
 		mRandomRecyclerView = (RecyclerView) view.findViewById(R.id.randomRecycler);
 		mRandomRecyclerView.setHasFixedSize(true);
@@ -100,10 +103,10 @@ public class ExploreFragment extends Fragment {
 		@Override
 		protected String doInBackground(String... uri) {
 			try {
+				wallpaperIDs = new ArrayList<Integer>();
 				String url = URLBuilder.getURLforLatest();
 				Document document = Jsoup.connect(url).get();
 				Elements results = document.select(".thumb-listing-page ul li figure");
-				wallpaperIDs = new ArrayList<Integer>();
 				for (Element result : results) {
 					wallpaperIDs.add(Integer.parseInt(result.attr("data-wallpaper-id")));
 				}
@@ -138,10 +141,10 @@ public class ExploreFragment extends Fragment {
 		@Override
 		protected String doInBackground(String... uri) {
 			try {
+				wallpaperIDs = new ArrayList<Integer>();
 				String url = URLBuilder.getURLforRandom();
 				Document document = Jsoup.connect(url).get();
 				Elements results = document.select(".thumb-listing-page ul li figure");
-				wallpaperIDs = new ArrayList<Integer>();
 				for (Element result : results) {
 					wallpaperIDs.add(Integer.parseInt(result.attr("data-wallpaper-id")));
 				}
